@@ -10,6 +10,7 @@ import {
   TIPOS_TAREA,
 } from "@/lib/types";
 import {
+  calcularAvanceAutomatico,
   calcularDiasDisponibles,
   calcularFechaProyectadaFinal,
   calcularRuta,
@@ -134,6 +135,23 @@ export default function ProjectForm({
   );
   const diasDisponibles = calcularDiasDisponibles(fechaProyectadaFinal);
   const ruta = calcularRuta(carpetaBase, form.numero, form.cliente || "SIN-CLIENTE");
+  const avanceAutomatico = calcularAvanceAutomatico(
+    form.fecha_inicio,
+    fechaProyectadaFinal,
+    form.proyecto_con_gantt
+  );
+
+  // Cuando el proyecto NO tiene GANTT, el % avance se calcula solo (igual que
+  // la fórmula del Excel) y se mantiene sincronizado con lo que se guarda.
+  useEffect(() => {
+    if (!form.proyecto_con_gantt) {
+      const valor = avanceAutomatico ?? 0;
+      if (valor !== form.porcentaje_avance) {
+        set("porcentaje_avance", valor);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.proyecto_con_gantt, form.fecha_inicio, fechaProyectadaFinal]);
 
   async function guardar() {
     if (!form.cliente.trim()) {
@@ -391,13 +409,27 @@ export default function ProjectForm({
                   }
                 />
               </Campo>
-              <Campo label="% Avance">
+              <Campo
+                label="% Avance"
+                helper={
+                  form.proyecto_con_gantt
+                    ? "Se obtiene del archivo GANTT"
+                    : "Calculado automáticamente por tiempo transcurrido"
+                }
+              >
                 <input
                   type="number"
                   min={0}
                   max={100}
-                  className={inputCls}
-                  value={form.porcentaje_avance ?? 0}
+                  disabled={!form.proyecto_con_gantt}
+                  className={`${inputCls} ${
+                    !form.proyecto_con_gantt ? "bg-slate-50 text-slate-500" : ""
+                  }`}
+                  value={
+                    form.proyecto_con_gantt
+                      ? form.porcentaje_avance ?? 0
+                      : avanceAutomatico ?? 0
+                  }
                   onChange={(e) =>
                     set("porcentaje_avance", Number(e.target.value))
                   }
