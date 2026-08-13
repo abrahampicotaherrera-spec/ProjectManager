@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: #F2F4F7;
+  color: #111A2E;
+}
+
+::selection {
+  background-color: #AEDDD7;
+  color: #082E2A;
+}
+
+/* Scrollbar discreto para las tablas densas */
+.thin-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background-color: #C7CDDA;
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
