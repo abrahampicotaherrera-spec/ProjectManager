@@ -17,7 +17,8 @@ import {
 } from "@/lib/calculations";
 import PipelineStepper from "./PipelineStepper";
 
-const VACIO: ProyectoInput = {
+const vacio = (numero: number): ProyectoInput => ({
+  numero,
   tipo_tarea: "PROYECTO",
   cliente: "",
   nombre_hubspot: "",
@@ -41,7 +42,7 @@ const VACIO: ProyectoInput = {
   ruta_hubspot: "",
   codigo_cliente_xdoc: "",
   conectividad: null,
-};
+});
 
 function Campo({
   label,
@@ -86,6 +87,7 @@ export default function ProjectForm({
   const [form, setForm] = useState<ProyectoInput>(
     proyecto
       ? {
+          numero: proyecto.numero,
           tipo_tarea: proyecto.tipo_tarea,
           cliente: proyecto.cliente,
           nombre_hubspot: proyecto.nombre_hubspot,
@@ -110,7 +112,7 @@ export default function ProjectForm({
           codigo_cliente_xdoc: proyecto.codigo_cliente_xdoc,
           conectividad: proyecto.conectividad,
         }
-      : VACIO
+      : vacio(siguienteNumero)
   );
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,13 +128,12 @@ export default function ProjectForm({
   const set = <K extends keyof ProyectoInput>(k: K, v: ProyectoInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const numero = proyecto?.numero ?? siguienteNumero;
   const fechaProyectadaFinal = calcularFechaProyectadaFinal(
     form.fecha_inicio,
     form.semanas_proyecto
   );
   const diasDisponibles = calcularDiasDisponibles(fechaProyectadaFinal);
-  const ruta = calcularRuta(carpetaBase, numero, form.cliente || "SIN-CLIENTE");
+  const ruta = calcularRuta(carpetaBase, form.numero, form.cliente || "SIN-CLIENTE");
 
   async function guardar() {
     if (!form.cliente.trim()) {
@@ -156,13 +157,27 @@ export default function ProjectForm({
         {/* Encabezado */}
         <div className="border-b border-slate-200 bg-white px-6 py-4">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="font-mono text-xs text-slate-400">
-                {proyecto ? `Proyecto No. ${proyecto.numero}` : `Nuevo · No. ${siguienteNumero}`}
-              </p>
-              <h2 className="text-lg font-semibold text-ink-900">
-                {form.cliente || "Sin nombre de cliente"}
-              </h2>
+            <div className="flex items-start gap-3">
+              <label className="block">
+                <span className="text-[10px] font-medium text-slate-400">
+                  No.
+                </span>
+                <input
+                  type="number"
+                  className="mt-0.5 w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 font-mono text-sm shadow-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+                  value={form.numero}
+                  onChange={(e) => set("numero", Number(e.target.value))}
+                />
+              </label>
+              <div>
+                <h2 className="text-lg font-semibold text-ink-900">
+                  {form.cliente || "Sin nombre de cliente"}
+                </h2>
+                <p className="text-[11px] text-slate-400">
+                  El siguiente proyecto nuevo continuará desde el número más
+                  alto que exista.
+                </p>
+              </div>
             </div>
             <button
               onClick={onCancel}

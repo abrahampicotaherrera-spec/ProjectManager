@@ -54,10 +54,7 @@ export interface Proyecto {
   updated_at: string;
 }
 
-export type ProyectoInput = Omit<
-  Proyecto,
-  "id" | "numero" | "created_at" | "updated_at"
->;
+export type ProyectoInput = Omit<Proyecto, "id" | "created_at" | "updated_at">;
 
 export interface Persona {
   id: string;

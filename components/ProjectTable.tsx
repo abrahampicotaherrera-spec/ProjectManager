@@ -6,20 +6,70 @@ import {
   calcularFechaProyectadaFinal,
   formatFecha,
 } from "@/lib/calculations";
-import EstadoPill from "./EstadoPill";
 
-const PRIORIDAD_DOT: Record<string, string> = {
-  Alto: "bg-rust-500",
-  Medio: "bg-clay-500",
-  Bajo: "bg-brand-400",
+// Mismos colores que la hoja PROYECTOS de STATUS_DE_PROYECTOS.xlsm
+// (Formato condicional por columna ESTADO)
+const RESALTADO_FILA: Record<string, string> = {
+  "Area Comercial": "#F6C6AD",
+  Pruebas: "#FFD666",
+  "Go Live / Hyper Care": "#B4E5A2",
+  Suspendido: "#DDA6A6",
 };
+
+function celda(texto: string | number | null | undefined, mono = false) {
+  return (
+    <td
+      className={`whitespace-nowrap border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800 ${
+        mono ? "font-mono text-xs" : ""
+      }`}
+    >
+      {texto === null || texto === undefined || texto === "" ? (
+        <span className="text-slate-300">—</span>
+      ) : (
+        texto
+      )}
+    </td>
+  );
+}
+
+const COLUMNAS = [
+  "No.",
+  "Tipo de tarea",
+  "Cliente",
+  "Nombre HubSpot",
+  "NV",
+  "RUC",
+  "DV",
+  "Estado",
+  "Tarea",
+  "Observaciones",
+  "Asignado",
+  "Ejecutivo comercial",
+  "País",
+  "Prioridad",
+  "Semanas de proyecto",
+  "Fecha asignación",
+  "Fecha inicio",
+  "Fecha proyectada final",
+  "Cantidad de días disponibles",
+  "Fecha finalización",
+  "Ruta",
+  "% Avance",
+  "Proyecto con GANTT",
+  "Ruta GANTT",
+  "Ruta HubSpot",
+  "Código cliente XDOC",
+  "Conectividad",
+];
 
 export default function ProjectTable({
   proyectos,
   onSelect,
+  carpetaBase,
 }: {
   proyectos: Proyecto[];
   onSelect: (p: Proyecto) => void;
+  carpetaBase: string;
 }) {
   if (proyectos.length === 0) {
     return (
@@ -35,21 +85,18 @@ export default function ProjectTable({
   }
 
   return (
-    <div className="thin-scroll overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-card">
-      <table className="w-full min-w-[1100px] border-collapse text-sm">
+    <div className="thin-scroll overflow-auto rounded-xl border border-slate-200 bg-white shadow-card">
+      <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50/80 text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-4 py-3 font-medium">No.</th>
-            <th className="px-4 py-3 font-medium">Cliente</th>
-            <th className="px-4 py-3 font-medium">Tipo</th>
-            <th className="px-4 py-3 font-medium">Estado</th>
-            <th className="px-4 py-3 font-medium">Prioridad</th>
-            <th className="px-4 py-3 font-medium">Asignado</th>
-            <th className="px-4 py-3 font-medium">Ejecutivo comercial</th>
-            <th className="px-4 py-3 font-medium">País</th>
-            <th className="px-4 py-3 font-medium">Fecha proyectada final</th>
-            <th className="px-4 py-3 font-medium">Días disponibles</th>
-            <th className="px-4 py-3 font-medium">% Avance</th>
+          <tr>
+            {COLUMNAS.map((c) => (
+              <th
+                key={c}
+                className="sticky top-0 z-10 whitespace-nowrap border-b border-r border-slate-300 bg-[#F9F9F9] px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-tight text-ink-900"
+              >
+                {c}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -59,82 +106,63 @@ export default function ProjectTable({
               p.semanas_proyecto
             );
             const dias = calcularDiasDisponibles(fechaFinal);
+            const ruta = `${carpetaBase.replace(/[\\/]+$/, "")}\\${p.numero}-${
+              p.cliente || "SIN-CLIENTE"
+            }`;
+            const fondo = RESALTADO_FILA[p.estado];
             return (
               <tr
                 key={p.id}
                 onClick={() => onSelect(p)}
-                className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-brand-50/40"
+                className="cursor-pointer hover:brightness-95"
+                style={fondo ? { backgroundColor: fondo } : undefined}
               >
-                <td className="px-4 py-3 font-mono text-xs text-slate-500">
-                  {p.numero}
+                {celda(p.numero, true)}
+                {celda(p.tipo_tarea)}
+                <td className="whitespace-nowrap border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] font-medium text-ink-900">
+                  {p.cliente}
                 </td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-ink-900">{p.cliente}</div>
-                  {p.nombre_hubspot && (
-                    <div className="text-xs text-slate-400">
-                      {p.nombre_hubspot}
-                    </div>
-                  )}
+                {celda(p.nombre_hubspot)}
+                {celda(p.nv, true)}
+                {celda(p.ruc, true)}
+                {celda(p.dv, true)}
+                {celda(p.estado)}
+                <td
+                  className="max-w-[240px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800"
+                  title={p.tarea ?? ""}
+                >
+                  {p.tarea || <span className="text-slate-300">—</span>}
                 </td>
-                <td className="px-4 py-3 text-slate-600">{p.tipo_tarea}</td>
-                <td className="px-4 py-3">
-                  <EstadoPill estado={p.estado} />
+                <td
+                  className="max-w-[240px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800"
+                  title={p.observaciones ?? ""}
+                >
+                  {p.observaciones || <span className="text-slate-300">—</span>}
                 </td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        PRIORIDAD_DOT[p.prioridad] ?? "bg-slate-300"
-                      }`}
-                    />
-                    {p.prioridad}
-                  </span>
+                {celda(p.asignado)}
+                {celda(p.ejecutivo_comercial)}
+                {celda(p.pais)}
+                {celda(p.prioridad)}
+                {celda(p.semanas_proyecto)}
+                {celda(formatFecha(p.fecha_asignacion))}
+                {celda(formatFecha(p.fecha_inicio))}
+                {celda(formatFecha(fechaFinal))}
+                {celda(dias === null ? null : `${dias} d`)}
+                {celda(formatFecha(p.fecha_finalizacion))}
+                <td
+                  className="max-w-[220px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-xs text-slate-500"
+                  title={ruta}
+                >
+                  {ruta}
                 </td>
-                <td className="px-4 py-3 text-slate-600">
-                  {p.asignado || "—"}
-                </td>
-                <td className="px-4 py-3 text-slate-600">
-                  {p.ejecutivo_comercial || "—"}
-                </td>
-                <td className="px-4 py-3 text-slate-600">{p.pais || "—"}</td>
-                <td className="px-4 py-3 text-slate-600">
-                  {formatFecha(fechaFinal)}
-                </td>
-                <td className="px-4 py-3">
-                  {dias === null ? (
-                    "—"
-                  ) : (
-                    <span
-                      className={
-                        dias < 0
-                          ? "font-medium text-rust-500"
-                          : dias <= 7
-                          ? "font-medium text-clay-500"
-                          : "text-slate-600"
-                      }
-                    >
-                      {dias} d
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-brand-500"
-                        style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(0, p.porcentaje_avance ?? 0)
-                          )}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs text-slate-500">
-                      {p.porcentaje_avance ?? 0}%
-                    </span>
-                  </div>
-                </td>
+                {celda(
+                  p.porcentaje_avance === null ? null : `${p.porcentaje_avance}%`
+                )}
+                {celda(p.proyecto_con_gantt ? "Sí" : "No")}
+                {celda(p.ruta_gantt)}
+                {celda(p.ruta_hubspot)}
+                {celda(p.codigo_cliente_xdoc, true)}
+                {celda(p.conectividad)}
               </tr>
             );
           })}

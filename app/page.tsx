@@ -213,6 +213,7 @@ export default function Home() {
           <ProjectTable
             proyectos={proyectosFiltrados}
             onSelect={setProyectoEditando}
+            carpetaBase={carpetaBase}
           />
         )}
       </div>
