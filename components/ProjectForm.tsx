@@ -18,6 +18,7 @@ import {
 } from "@/lib/calculations";
 import PipelineStepper from "./PipelineStepper";
 import HitosPanel from "./HitosPanel";
+import ReunionesPanel from "./ReunionesPanel";
 
 const vacio = (numero: number): ProyectoInput => ({
   numero,
@@ -362,10 +363,14 @@ export default function ProjectForm({
           </section>
 
           {proyecto ? (
-            <HitosPanel proyectoId={proyecto.id} />
+            <>
+              <HitosPanel proyectoId={proyecto.id} />
+              <ReunionesPanel proyectoId={proyecto.id} cliente={proyecto.cliente} />
+            </>
           ) : (
             <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-400">
-              Guarda el proyecto primero para poder empezar a registrar hitos.
+              Guarda el proyecto primero para poder empezar a registrar hitos
+              y reuniones.
             </p>
           )}
 
