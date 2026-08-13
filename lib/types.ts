@@ -69,3 +69,13 @@ export interface Hito {
   nota: string;
   created_at: string;
 }
+
+export interface Reunion {
+  id: string;
+  proyecto_id: string;
+  fecha: string; // ISO date
+  asunto: string | null;
+  asistentes: string | null;
+  notas: string;
+  created_at: string;
+}
