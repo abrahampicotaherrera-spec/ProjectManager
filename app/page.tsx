@@ -6,6 +6,7 @@ import { Persona, Proyecto, ProyectoInput } from "@/lib/types";
 import FilterBar, { Filtros, FILTROS_VACIOS } from "@/components/FilterBar";
 import ProjectTable from "@/components/ProjectTable";
 import ProjectForm from "@/components/ProjectForm";
+import QuickAddModal from "@/components/QuickAddModal";
 import SettingsPanel from "@/components/SettingsPanel";
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
   );
   const [creandoNuevo, setCreandoNuevo] = useState(false);
   const [mostrarConfig, setMostrarConfig] = useState(false);
+  const [mostrarAgregarNota, setMostrarAgregarNota] = useState(false);
 
   async function cargarTodo() {
     setCargando(true);
@@ -178,6 +180,12 @@ export default function Home() {
               Configuración
             </button>
             <button
+              onClick={() => setMostrarAgregarNota(true)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-ink-800 hover:bg-slate-50"
+            >
+              + Hito / Reunión
+            </button>
+            <button
               onClick={() => setCreandoNuevo(true)}
               className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700"
             >
@@ -231,6 +239,13 @@ export default function Home() {
           }}
           onSave={guardarProyecto}
           onDelete={proyectoEditando ? eliminarProyecto : undefined}
+        />
+      )}
+
+      {mostrarAgregarNota && (
+        <QuickAddModal
+          proyectos={proyectos}
+          onClose={() => setMostrarAgregarNota(false)}
         />
       )}
 
