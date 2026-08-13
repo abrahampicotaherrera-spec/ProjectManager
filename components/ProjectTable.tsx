@@ -2,6 +2,7 @@
 
 import { Proyecto } from "@/lib/types";
 import {
+  calcularAvanceAutomatico,
   calcularDiasDisponibles,
   calcularFechaProyectadaFinal,
   formatFecha,
@@ -106,6 +107,10 @@ export default function ProjectTable({
               p.semanas_proyecto
             );
             const dias = calcularDiasDisponibles(fechaFinal);
+            const avanceMostrado = p.proyecto_con_gantt
+              ? p.porcentaje_avance
+              : calcularAvanceAutomatico(p.fecha_inicio, fechaFinal, false) ??
+                p.porcentaje_avance;
             const ruta = `${carpetaBase.replace(/[\\/]+$/, "")}\\${p.numero}-${
               p.cliente || "SIN-CLIENTE"
             }`;
@@ -156,7 +161,7 @@ export default function ProjectTable({
                   {ruta}
                 </td>
                 {celda(
-                  p.porcentaje_avance === null ? null : `${p.porcentaje_avance}%`
+                  avanceMostrado === null ? null : `${avanceMostrado}%`
                 )}
                 {celda(p.proyecto_con_gantt ? "Sí" : "No")}
                 {celda(p.ruta_gantt)}
