@@ -66,4 +66,26 @@ export function calcularAvanceAutomatico(
   const avance =
     Math.max(0, (hoy.getTime() - inicio.getTime()) / (final.getTime() - inicio.getTime())) *
     100;
-  return
+  return Math.round(avance * 100) / 100;
+}
+
+export function formatFecha(fecha: string | null): string {
+  if (!fecha) return "—";
+  const d = new Date(fecha + "T00:00:00");
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("es-PA", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function proyectoConDerivados(p: Proyecto, carpetaBase: string) {
+  const fechaProyectadaFinal = calcularFechaProyectadaFinal(
+    p.fecha_inicio,
+    p.semanas_proyecto
+  );
+  const diasDisponibles = calcularDiasDisponibles(fechaProyectadaFinal);
+  const ruta = calcularRuta(carpetaBase, p.numero, p.cliente);
+  return { ...p, fechaProyectadaFinal, diasDisponibles, ruta };
+}
