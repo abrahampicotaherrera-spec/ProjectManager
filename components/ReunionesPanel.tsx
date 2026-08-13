@@ -24,6 +24,71 @@ function construirMailto(r: Reunion, cliente: string): string {
   )}`;
 }
 
+interface FormReunion {
+  fecha: string;
+  asunto: string;
+  asistentes: string;
+  notas: string;
+}
+
+function CamposReunion({
+  valores,
+  onChange,
+}: {
+  valores: FormReunion;
+  onChange: (v: FormReunion) => void;
+}) {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-xs font-medium text-slate-500">Fecha</span>
+          <input
+            type="date"
+            className={`${inputCls} mt-1`}
+            value={valores.fecha}
+            onChange={(e) => onChange({ ...valores, fecha: e.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-medium text-slate-500">Asunto</span>
+          <input
+            className={`${inputCls} mt-1`}
+            placeholder="Ej. Kick off, revisión de avance…"
+            value={valores.asunto}
+            onChange={(e) => onChange({ ...valores, asunto: e.target.value })}
+          />
+        </label>
+      </div>
+      <label className="block">
+        <span className="text-xs font-medium text-slate-500">Asistentes</span>
+        <input
+          className={`${inputCls} mt-1`}
+          placeholder="Nombres separados por coma"
+          value={valores.asistentes}
+          onChange={(e) => onChange({ ...valores, asistentes: e.target.value })}
+        />
+      </label>
+      <label className="block">
+        <span className="text-xs font-medium text-slate-500">Notas</span>
+        <textarea
+          className={`${inputCls} mt-1 min-h-[90px]`}
+          placeholder="¿Qué se habló, qué se acordó, próximos pasos…?"
+          value={valores.notas}
+          onChange={(e) => onChange({ ...valores, notas: e.target.value })}
+        />
+      </label>
+    </>
+  );
+}
+
+const vacio = (): FormReunion => ({
+  fecha: new Date().toISOString().slice(0, 10),
+  asunto: "",
+  asistentes: "",
+  notas: "",
+});
+
 export default function ReunionesPanel({
   proyectoId,
   cliente,
@@ -35,13 +100,14 @@ export default function ReunionesPanel({
   const [cargando, setCargando] = useState(true);
   const [expandidoId, setExpandidoId] = useState<string | null>(null);
 
-  const [fecha, setFecha] = useState(() => new Date().toISOString().slice(0, 10));
-  const [asunto, setAsunto] = useState("");
-  const [asistentes, setAsistentes] = useState("");
-  const [notas, setNotas] = useState("");
+  const [nueva, setNueva] = useState<FormReunion>(vacio());
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
+
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [edicion, setEdicion] = useState<FormReunion>(vacio());
+  const [guardandoEdicion, setGuardandoEdicion] = useState(false);
 
   async function cargarReuniones() {
     setCargando(true);
@@ -61,7 +127,7 @@ export default function ReunionesPanel({
   }, [proyectoId]);
 
   async function guardarReunion() {
-    if (!notas.trim()) {
+    if (!nueva.notas.trim()) {
       setError("Escribe al menos las notas de la reunión.");
       return;
     }
@@ -69,21 +135,48 @@ export default function ReunionesPanel({
     setGuardando(true);
     const { error } = await supabase.from("reuniones").insert({
       proyecto_id: proyectoId,
-      fecha,
-      asunto: asunto.trim() || null,
-      asistentes: asistentes.trim() || null,
-      notas: notas.trim(),
+      fecha: nueva.fecha,
+      asunto: nueva.asunto.trim() || null,
+      asistentes: nueva.asistentes.trim() || null,
+      notas: nueva.notas.trim(),
     });
     setGuardando(false);
     if (error) {
       setError(error.message);
       return;
     }
-    setAsunto("");
-    setAsistentes("");
-    setNotas("");
+    setNueva(vacio());
     setMostrarForm(false);
     await cargarReuniones();
+  }
+
+  function empezarEdicion(r: Reunion) {
+    setEditandoId(r.id);
+    setEdicion({
+      fecha: r.fecha,
+      asunto: r.asunto ?? "",
+      asistentes: r.asistentes ?? "",
+      notas: r.notas,
+    });
+  }
+
+  async function guardarEdicion(id: string) {
+    if (!edicion.notas.trim()) return;
+    setGuardandoEdicion(true);
+    const { error } = await supabase
+      .from("reuniones")
+      .update({
+        fecha: edicion.fecha,
+        asunto: edicion.asunto.trim() || null,
+        asistentes: edicion.asistentes.trim() || null,
+        notas: edicion.notas.trim(),
+      })
+      .eq("id", id);
+    setGuardandoEdicion(false);
+    if (!error) {
+      setEditandoId(null);
+      await cargarReuniones();
+    }
   }
 
   async function eliminarReunion(id: string) {
@@ -109,44 +202,7 @@ export default function ReunionesPanel({
 
       {mostrarForm && (
         <div className="space-y-3 rounded-lg border border-brand-200 bg-brand-50/40 p-3">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="text-xs font-medium text-slate-500">Fecha</span>
-              <input
-                type="date"
-                className={`${inputCls} mt-1`}
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-medium text-slate-500">Asunto</span>
-              <input
-                className={`${inputCls} mt-1`}
-                placeholder="Ej. Kick off, revisión de avance…"
-                value={asunto}
-                onChange={(e) => setAsunto(e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="block">
-            <span className="text-xs font-medium text-slate-500">Asistentes</span>
-            <input
-              className={`${inputCls} mt-1`}
-              placeholder="Nombres separados por coma"
-              value={asistentes}
-              onChange={(e) => setAsistentes(e.target.value)}
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-medium text-slate-500">Notas</span>
-            <textarea
-              className={`${inputCls} mt-1 min-h-[90px]`}
-              placeholder="¿Qué se habló, qué se acordó, próximos pasos…?"
-              value={notas}
-              onChange={(e) => setNotas(e.target.value)}
-            />
-          </label>
+          <CamposReunion valores={nueva} onChange={setNueva} />
           {error && <p className="text-xs text-rust-500">{error}</p>}
           <div className="flex justify-end gap-2">
             <button
@@ -179,6 +235,7 @@ export default function ReunionesPanel({
         <ul className="space-y-2">
           {reuniones.map((r) => {
             const abierta = expandidoId === r.id;
+            const editando = editandoId === r.id;
             return (
               <li
                 key={r.id}
@@ -204,32 +261,61 @@ export default function ReunionesPanel({
                   </span>
                 </button>
                 {abierta && (
-                  <div className="space-y-2 border-t border-slate-100 px-3 py-3">
-                    {r.asistentes && (
-                      <p className="text-xs text-slate-500">
-                        <span className="font-medium text-slate-600">
-                          Asistentes:
-                        </span>{" "}
-                        {r.asistentes}
-                      </p>
+                  <div className="space-y-3 border-t border-slate-100 px-3 py-3">
+                    {editando ? (
+                      <>
+                        <CamposReunion valores={edicion} onChange={setEdicion} />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => setEditandoId(null)}
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-800 hover:bg-slate-50"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={() => guardarEdicion(r.id)}
+                            disabled={guardandoEdicion}
+                            className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                          >
+                            {guardandoEdicion ? "Guardando…" : "Guardar cambios"}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {r.asistentes && (
+                          <p className="text-xs text-slate-500">
+                            <span className="font-medium text-slate-600">
+                              Asistentes:
+                            </span>{" "}
+                            {r.asistentes}
+                          </p>
+                        )}
+                        <p className="whitespace-pre-wrap text-sm text-ink-800">
+                          {r.notas}
+                        </p>
+                        <div className="flex items-center gap-3">
+                          <a
+                            href={construirMailto(r, cliente)}
+                            className="text-[11px] font-medium text-brand-700 hover:underline"
+                          >
+                            Enviar por correo
+                          </a>
+                          <button
+                            onClick={() => empezarEdicion(r)}
+                            className="text-[11px] font-medium text-slate-400 hover:text-brand-700"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => eliminarReunion(r.id)}
+                            className="text-[11px] text-rust-500 hover:underline"
+                          >
+                            Eliminar reunión
+                          </button>
+                        </div>
+                      </>
                     )}
-                    <p className="whitespace-pre-wrap text-sm text-ink-800">
-                      {r.notas}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <a
-                        href={construirMailto(r, cliente)}
-                        className="text-[11px] font-medium text-brand-700 hover:underline"
-                      >
-                        Enviar por correo
-                      </a>
-                      <button
-                        onClick={() => eliminarReunion(r.id)}
-                        className="text-[11px] text-rust-500 hover:underline"
-                      >
-                        Eliminar reunión
-                      </button>
-                    </div>
                   </div>
                 )}
               </li>
