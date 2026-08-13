@@ -61,3 +61,11 @@ export interface Persona {
   nombre: string;
   rol: "ASIGNADO" | "EJECUTIVO_COMERCIAL";
 }
+
+export interface Hito {
+  id: string;
+  proyecto_id: string;
+  fecha: string; // ISO date
+  nota: string;
+  created_at: string;
+}
