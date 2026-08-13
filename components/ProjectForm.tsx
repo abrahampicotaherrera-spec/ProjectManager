@@ -17,6 +17,7 @@ import {
   formatFecha,
 } from "@/lib/calculations";
 import PipelineStepper from "./PipelineStepper";
+import HitosPanel from "./HitosPanel";
 
 const vacio = (numero: number): ProyectoInput => ({
   numero,
@@ -359,6 +360,14 @@ export default function ProjectForm({
               />
             </Campo>
           </section>
+
+          {proyecto ? (
+            <HitosPanel proyectoId={proyecto.id} />
+          ) : (
+            <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-400">
+              Guarda el proyecto primero para poder empezar a registrar hitos.
+            </p>
+          )}
 
           <section className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
