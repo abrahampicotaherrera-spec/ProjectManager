@@ -47,23 +47,23 @@ export function calcularRuta(
   return `${base}${sep}${numero}-${clienteLimpio}`;
 }
 
-export function formatFecha(fecha: string | null): string {
-  if (!fecha) return "—";
-  const d = new Date(fecha + "T00:00:00");
-  if (isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("es-PA", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-export function proyectoConDerivados(p: Proyecto, carpetaBase: string) {
-  const fechaProyectadaFinal = calcularFechaProyectadaFinal(
-    p.fecha_inicio,
-    p.semanas_proyecto
-  );
-  const diasDisponibles = calcularDiasDisponibles(fechaProyectadaFinal);
-  const ruta = calcularRuta(carpetaBase, p.numero, p.cliente);
-  return { ...p, fechaProyectadaFinal, diasDisponibles, ruta };
-}
+export function calcularAvanceAutomatico(
+  fechaInicio: string | null,
+  fechaProyectadaFinal: string | null,
+  proyectoConGantt: boolean
+): number | null {
+  // Excel: =IF(Y<>"No","",IF(R<=Q,"",IF(TODAY()>R,100,ROUND(MAX(0,(TODAY()-Q)/(R-Q))*100,2))))
+  // Si el proyecto SÍ tiene GANTT, el % avance viene del archivo GANTT (manual, no se calcula aquí)
+  if (proyectoConGantt) return null;
+  if (!fechaInicio || !fechaProyectadaFinal) return null;
+  const inicio = new Date(fechaInicio + "T00:00:00");
+  const final = new Date(fechaProyectadaFinal + "T00:00:00");
+  if (isNaN(inicio.getTime()) || isNaN(final.getTime())) return null;
+  if (final.getTime() <= inicio.getTime()) return null;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  if (hoy.getTime() > final.getTime()) return 100;
+  const avance =
+    Math.max(0, (hoy.getTime() - inicio.getTime()) / (final.getTime() - inicio.getTime())) *
+    100;
+  return
