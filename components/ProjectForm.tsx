@@ -19,6 +19,7 @@ import {
 import PipelineStepper from "./PipelineStepper";
 import HitosPanel from "./HitosPanel";
 import ReunionesPanel from "./ReunionesPanel";
+import ComboBox from "./ComboBox";
 
 const vacio = (numero: number): ProyectoInput => ({
   numero,
@@ -317,33 +318,21 @@ export default function ProjectForm({
                 </select>
               </Campo>
               <Campo label="Asignado" helper="Escribe para crear uno nuevo">
-                <input
-                  className={inputCls}
-                  list="lista-asignados"
+                <ComboBox
                   value={form.asignado ?? ""}
-                  onChange={(e) => set("asignado", e.target.value)}
+                  onChange={(v) => set("asignado", v)}
+                  opciones={asignados}
                 />
-                <datalist id="lista-asignados">
-                  {asignados.map((a) => (
-                    <option key={a} value={a} />
-                  ))}
-                </datalist>
               </Campo>
               <Campo
                 label="Ejecutivo comercial"
                 helper="Escribe para crear uno nuevo"
               >
-                <input
-                  className={inputCls}
-                  list="lista-ejecutivos"
+                <ComboBox
                   value={form.ejecutivo_comercial ?? ""}
-                  onChange={(e) => set("ejecutivo_comercial", e.target.value)}
+                  onChange={(v) => set("ejecutivo_comercial", v)}
+                  opciones={ejecutivos}
                 />
-                <datalist id="lista-ejecutivos">
-                  {ejecutivos.map((a) => (
-                    <option key={a} value={a} />
-                  ))}
-                </datalist>
               </Campo>
             </div>
             <Campo label="Tarea" helper="Actividades de la propuesta comercial">
