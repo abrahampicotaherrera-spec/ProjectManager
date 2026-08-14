@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Persona, Proyecto, ProyectoInput } from "@/lib/types";
+import ColumnSelector from "@/components/ColumnSelector";
 import FilterBar, { Filtros, FILTROS_VACIOS } from "@/components/FilterBar";
+import { cargarColumnasVisibles, guardarColumnasVisibles } from "@/lib/columnas";
 import ProjectTable from "@/components/ProjectTable";
 import ProjectForm from "@/components/ProjectForm";
 import QuickAddModal from "@/components/QuickAddModal";
@@ -27,6 +29,18 @@ export default function Home() {
   const [creandoNuevo, setCreandoNuevo] = useState(false);
   const [mostrarConfig, setMostrarConfig] = useState(false);
   const [mostrarAgregarNota, setMostrarAgregarNota] = useState(false);
+  const [columnasVisibles, setColumnasVisibles] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  useEffect(() => {
+    setColumnasVisibles(cargarColumnasVisibles());
+  }, []);
+
+  function actualizarColumnasVisibles(v: Record<string, boolean>) {
+    setColumnasVisibles(v);
+    guardarColumnasVisibles(v);
+  }
 
   async function cargarTodo() {
     setCargando(true);
@@ -208,9 +222,15 @@ export default function Home() {
             onChange={setFiltros}
             asignados={nombresAsignados}
           />
-          <p className="text-xs text-slate-400">
-            {proyectosFiltrados.length} de {proyectos.length} proyectos
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-slate-400">
+              {proyectosFiltrados.length} de {proyectos.length} proyectos
+            </p>
+            <ColumnSelector
+              visibles={columnasVisibles}
+              onChange={actualizarColumnasVisibles}
+            />
+          </div>
         </div>
 
         {cargando ? (
@@ -222,6 +242,7 @@ export default function Home() {
             proyectos={proyectosFiltrados}
             onSelect={setProyectoEditando}
             carpetaBase={carpetaBase}
+            columnasVisibles={columnasVisibles}
           />
         )}
       </div>
