@@ -39,6 +39,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
+          "Calibri",
           "Inter",
           "-apple-system",
           "Segoe UI",
