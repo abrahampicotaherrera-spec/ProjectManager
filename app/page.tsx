@@ -4,8 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Persona, Proyecto, ProyectoInput } from "@/lib/types";
 import ColumnSelector from "@/components/ColumnSelector";
-import FilterBar, { Filtros, FILTROS_VACIOS } from "@/components/FilterBar";
-import { cargarColumnasVisibles, guardarColumnasVisibles } from "@/lib/columnas";
+import DashboardResumen from "@/components/DashboardResumen";
+import FilterBar from "@/components/FilterBar";
+import { Filtros, FILTROS_VACIOS, cargarFiltros, guardarFiltros } from "@/lib/filtros";
+import {
+  cargarColumnasVisibles,
+  cargarOrdenColumnas,
+  guardarColumnasVisibles,
+  guardarOrdenColumnas,
+  ordenDefault,
+} from "@/lib/columnas";
 import ProjectTable from "@/components/ProjectTable";
 import ProjectForm from "@/components/ProjectForm";
 import QuickAddModal from "@/components/QuickAddModal";
@@ -32,14 +40,31 @@ export default function Home() {
   const [columnasVisibles, setColumnasVisibles] = useState<Record<string, boolean>>(
     {}
   );
+  const [ordenColumnas, setOrdenColumnas] = useState<string[]>(ordenDefault());
+  const [vista, setVista] = useState<"tabla" | "resumen">("tabla");
+
+  useEffect(() => {
+    setFiltros(cargarFiltros());
+  }, []);
+
+  function actualizarFiltros(f: Filtros) {
+    setFiltros(f);
+    guardarFiltros(f);
+  }
 
   useEffect(() => {
     setColumnasVisibles(cargarColumnasVisibles());
+    setOrdenColumnas(cargarOrdenColumnas());
   }, []);
 
   function actualizarColumnasVisibles(v: Record<string, boolean>) {
     setColumnasVisibles(v);
     guardarColumnasVisibles(v);
+  }
+
+  function actualizarOrdenColumnas(orden: string[]) {
+    setOrdenColumnas(orden);
+    guardarOrdenColumnas(orden);
   }
 
   async function cargarTodo() {
@@ -78,10 +103,20 @@ export default function Home() {
 
   const proyectosFiltrados = useMemo(() => {
     return proyectos.filter((p) => {
-      if (filtros.estado && p.estado !== filtros.estado) return false;
-      if (filtros.prioridad && p.prioridad !== filtros.prioridad) return false;
-      if (filtros.tipoTarea && p.tipo_tarea !== filtros.tipoTarea) return false;
-      if (filtros.asignado && p.asignado !== filtros.asignado) return false;
+      if (filtros.estados.length > 0 && !filtros.estados.includes(p.estado))
+        return false;
+      if (
+        filtros.prioridades.length > 0 &&
+        !filtros.prioridades.includes(p.prioridad)
+      )
+        return false;
+      if (filtros.tipos.length > 0 && !filtros.tipos.includes(p.tipo_tarea))
+        return false;
+      if (
+        filtros.asignados.length > 0 &&
+        !(p.asignado && filtros.asignados.includes(p.asignado))
+      )
+        return false;
       if (filtros.busqueda) {
         const q = filtros.busqueda.toLowerCase();
         const campos = [p.cliente, p.nombre_hubspot, p.nv, p.ruc, p.tarea];
@@ -217,32 +252,65 @@ export default function Home() {
         )}
 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <FilterBar
-            filtros={filtros}
-            onChange={setFiltros}
-            asignados={nombresAsignados}
-          />
-          <div className="flex items-center gap-3">
-            <p className="text-xs text-slate-400">
-              {proyectosFiltrados.length} de {proyectos.length} proyectos
-            </p>
-            <ColumnSelector
-              visibles={columnasVisibles}
-              onChange={actualizarColumnasVisibles}
-            />
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
+              <button
+                onClick={() => setVista("tabla")}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                  vista === "tabla"
+                    ? "bg-brand-600 text-white"
+                    : "text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                Tabla
+              </button>
+              <button
+                onClick={() => setVista("resumen")}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                  vista === "resumen"
+                    ? "bg-brand-600 text-white"
+                    : "text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                Resumen
+              </button>
+            </div>
+            {vista === "tabla" && (
+              <FilterBar
+                filtros={filtros}
+                onChange={actualizarFiltros}
+                asignados={nombresAsignados}
+              />
+            )}
           </div>
+          {vista === "tabla" && (
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-slate-400">
+                {proyectosFiltrados.length} de {proyectos.length} proyectos
+              </p>
+              <ColumnSelector
+                visibles={columnasVisibles}
+                onChange={actualizarColumnasVisibles}
+                orden={ordenColumnas}
+              />
+            </div>
+          )}
         </div>
 
         {cargando ? (
           <div className="rounded-xl border border-slate-200 bg-white py-16 text-center text-sm text-slate-400 shadow-card">
             Cargando proyectos…
           </div>
+        ) : vista === "resumen" ? (
+          <DashboardResumen proyectos={proyectos} onSelect={setProyectoEditando} />
         ) : (
           <ProjectTable
             proyectos={proyectosFiltrados}
             onSelect={setProyectoEditando}
             carpetaBase={carpetaBase}
             columnasVisibles={columnasVisibles}
+            orden={ordenColumnas}
+            onReordenar={actualizarOrdenColumnas}
           />
         )}
       </div>
