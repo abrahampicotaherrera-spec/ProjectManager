@@ -6,9 +6,11 @@ import { COLUMNAS_FIJAS, COLUMNAS_PROYECTO } from "@/lib/columnas";
 export default function ColumnSelector({
   visibles,
   onChange,
+  orden,
 }: {
   visibles: Record<string, boolean>;
   onChange: (v: Record<string, boolean>) => void;
+  orden: string[];
 }) {
   const [abierto, setAbierto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -24,6 +26,9 @@ export default function ColumnSelector({
   }, []);
 
   const totalVisibles = Object.values(visibles).filter(Boolean).length;
+  const columnasOrdenadas = orden
+    .map((key) => COLUMNAS_PROYECTO.find((c) => c.key === key))
+    .filter((c): c is (typeof COLUMNAS_PROYECTO)[number] => !!c);
 
   return (
     <div className="relative" ref={ref}>
@@ -63,7 +68,7 @@ export default function ColumnSelector({
             </button>
           </div>
           <ul className="mt-1 space-y-0.5">
-            {COLUMNAS_PROYECTO.map((c) => {
+            {columnasOrdenadas.map((c) => {
               const fija = COLUMNAS_FIJAS.includes(c.key);
               return (
                 <li key={c.key}>

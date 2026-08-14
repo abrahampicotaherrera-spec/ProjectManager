@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Proyecto } from "@/lib/types";
 import { COLUMNAS_PROYECTO } from "@/lib/columnas";
 import {
@@ -50,12 +51,45 @@ export default function ProjectTable({
   onSelect,
   carpetaBase,
   columnasVisibles,
+  orden,
+  onReordenar,
 }: {
   proyectos: Proyecto[];
   onSelect: (p: Proyecto) => void;
   carpetaBase: string;
   columnasVisibles: Record<string, boolean>;
+  orden: string[];
+  onReordenar: (nuevoOrden: string[]) => void;
 }) {
+  const [arrastrando, setArrastrando] = useState<string | null>(null);
+
+  function onDragStart(key: string) {
+    setArrastrando(key);
+  }
+
+  function onDragOver(e: React.DragEvent, key: string) {
+    e.preventDefault();
+    if (!arrastrando || arrastrando === key) return;
+  }
+
+  function onDrop(keyDestino: string) {
+    if (!arrastrando || arrastrando === keyDestino) {
+      setArrastrando(null);
+      return;
+    }
+    const nuevo = [...orden];
+    const desde = nuevo.indexOf(arrastrando);
+    const hasta = nuevo.indexOf(keyDestino);
+    if (desde === -1 || hasta === -1) {
+      setArrastrando(null);
+      return;
+    }
+    nuevo.splice(desde, 1);
+    nuevo.splice(hasta, 0, arrastrando);
+    onReordenar(nuevo);
+    setArrastrando(null);
+  }
+
   if (proyectos.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 py-16 text-center">
@@ -69,7 +103,10 @@ export default function ProjectTable({
     );
   }
 
-  const columnas = COLUMNAS_PROYECTO.filter((c) => columnasVisibles[c.key] ?? true);
+  const columnas = orden
+    .map((key) => COLUMNAS_PROYECTO.find((c) => c.key === key))
+    .filter((c): c is (typeof COLUMNAS_PROYECTO)[number] => !!c)
+    .filter((c) => columnasVisibles[c.key] ?? true);
 
   function celdaPorColumna(
     p: Proyecto,
@@ -155,7 +192,15 @@ export default function ProjectTable({
             {columnas.map((c) => (
               <th
                 key={c.key}
-                className="sticky top-0 z-10 whitespace-nowrap border-b border-r border-slate-300 bg-[#F9F9F9] px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-tight text-ink-900"
+                draggable
+                onDragStart={() => onDragStart(c.key)}
+                onDragOver={(e) => onDragOver(e, c.key)}
+                onDrop={() => onDrop(c.key)}
+                onDragEnd={() => setArrastrando(null)}
+                title="Arrastra para reordenar"
+                className={`sticky top-0 z-10 cursor-grab select-none whitespace-nowrap border-b border-r border-slate-300 bg-[#F9F9F9] px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-tight text-ink-900 active:cursor-grabbing ${
+                  arrastrando === c.key ? "opacity-40" : ""
+                }`}
               >
                 {c.label}
               </th>
