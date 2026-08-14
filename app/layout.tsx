@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Gestor de Proyectos",
+  title: "ALPH · Gestor de Proyectos",
   description: "Seguimiento de proyectos y servicios de clientes",
 };
 

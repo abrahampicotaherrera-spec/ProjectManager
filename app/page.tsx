@@ -6,6 +6,7 @@ import { Persona, Proyecto, ProyectoInput } from "@/lib/types";
 import ColumnSelector from "@/components/ColumnSelector";
 import DashboardResumen from "@/components/DashboardResumen";
 import TareasGlobal from "@/components/TareasGlobal";
+import Logo from "@/components/Logo";
 import FilterBar from "@/components/FilterBar";
 import { Filtros, FILTROS_VACIOS, cargarFiltros, guardarFiltros } from "@/lib/filtros";
 import {
@@ -219,13 +220,16 @@ export default function Home() {
     <main className="min-h-screen">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1800px] items-center justify-between px-4 py-5">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-brand-600">
-              Implementación de clientes
-            </p>
-            <h1 className="text-xl font-semibold text-ink-900">
-              Gestor de Proyectos
-            </h1>
+          <div className="flex items-center gap-3">
+            <Logo variant="icono" className="h-11 w-11 shrink-0 rounded-xl shadow-sm" />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-brand-600">
+                Implementación de clientes
+              </p>
+              <h1 className="text-xl font-semibold text-ink-900">
+                ALPH · Gestor de Proyectos
+              </h1>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
