@@ -79,3 +79,14 @@ export interface Reunion {
   notas: string;
   created_at: string;
 }
+
+export interface Tarea {
+  id: string;
+  proyecto_id: string;
+  texto: string;
+  completada: boolean;
+  importante: boolean;
+  fecha_limite: string | null; // ISO date
+  created_at: string;
+  completada_en: string | null;
+}
