@@ -19,6 +19,7 @@ import {
 import PipelineStepper from "./PipelineStepper";
 import HitosPanel from "./HitosPanel";
 import ReunionesPanel from "./ReunionesPanel";
+import TareasPanel from "./TareasPanel";
 import ComboBox from "./ComboBox";
 
 const vacio = (numero: number): ProyectoInput => ({
@@ -120,6 +121,17 @@ export default function ProjectForm({
   );
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rutaCopiada, setRutaCopiada] = useState(false);
+
+  async function copiarRuta() {
+    try {
+      await navigator.clipboard.writeText(ruta);
+      setRutaCopiada(true);
+      setTimeout(() => setRutaCopiada(false), 2000);
+    } catch {
+      // portapapeles no disponible en este navegador; no hacemos nada más
+    }
+  }
 
   useEffect(() => {
     function onEsc(e: KeyboardEvent) {
@@ -353,13 +365,14 @@ export default function ProjectForm({
 
           {proyecto ? (
             <>
+              <TareasPanel proyectoId={proyecto.id} />
               <HitosPanel proyectoId={proyecto.id} />
               <ReunionesPanel proyectoId={proyecto.id} cliente={proyecto.cliente} />
             </>
           ) : (
             <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-400">
-              Guarda el proyecto primero para poder empezar a registrar hitos
-              y reuniones.
+              Guarda el proyecto primero para poder empezar a registrar
+              tareas, hitos y reuniones.
             </p>
           )}
 
@@ -494,13 +507,30 @@ export default function ProjectForm({
               Rutas y Gantt
             </h3>
             <div>
-              <p className="text-xs font-medium text-slate-500">Ruta</p>
-              <p className="mt-1 break-all rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-600">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-slate-500">Ruta</p>
+                <button
+                  type="button"
+                  onClick={copiarRuta}
+                  className="text-[11px] font-medium text-brand-700 hover:underline"
+                >
+                  {rutaCopiada ? "¡Copiada!" : "Copiar ruta"}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={copiarRuta}
+                title="Click para copiar la ruta"
+                className="mt-1 block w-full break-all rounded-lg border border-slate-200 bg-white px-3 py-2 text-left font-mono text-xs text-slate-600 hover:border-brand-300"
+              >
                 {ruta}
-              </p>
+              </button>
               <p className="mt-1 text-[11px] text-slate-400">
-                Calculada como carpeta base + N°-CLIENTE. Configura la carpeta
-                base en Configuración.
+                Calculada como carpeta base + N°-CLIENTE. Haz click para
+                copiarla y pegarla en el Explorador de Windows (Win+R, o en
+                la barra de direcciones de una ventana abierta). La carpeta
+                se crea sola cuando corres el sincronizador local — ver
+                sync-gantt.
               </p>
             </div>
             <Campo label="Ruta HubSpot">
