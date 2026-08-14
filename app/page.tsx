@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Persona, Proyecto, ProyectoInput } from "@/lib/types";
 import ColumnSelector from "@/components/ColumnSelector";
 import DashboardResumen from "@/components/DashboardResumen";
+import TareasGlobal from "@/components/TareasGlobal";
 import FilterBar from "@/components/FilterBar";
 import { Filtros, FILTROS_VACIOS, cargarFiltros, guardarFiltros } from "@/lib/filtros";
 import {
@@ -41,7 +42,7 @@ export default function Home() {
     {}
   );
   const [ordenColumnas, setOrdenColumnas] = useState<string[]>(ordenDefault());
-  const [vista, setVista] = useState<"tabla" | "resumen">("tabla");
+  const [vista, setVista] = useState<"tabla" | "resumen" | "tareas">("tabla");
 
   useEffect(() => {
     setFiltros(cargarFiltros());
@@ -65,6 +66,11 @@ export default function Home() {
   function actualizarOrdenColumnas(orden: string[]) {
     setOrdenColumnas(orden);
     guardarOrdenColumnas(orden);
+  }
+
+  function abrirProyectoPorId(id: string) {
+    const p = proyectos.find((x) => x.id === id);
+    if (p) setProyectoEditando(p);
   }
 
   async function cargarTodo() {
@@ -274,6 +280,16 @@ export default function Home() {
               >
                 Resumen
               </button>
+              <button
+                onClick={() => setVista("tareas")}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                  vista === "tareas"
+                    ? "bg-brand-600 text-white"
+                    : "text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                Tareas
+              </button>
             </div>
             {vista === "tabla" && (
               <FilterBar
@@ -303,6 +319,8 @@ export default function Home() {
           </div>
         ) : vista === "resumen" ? (
           <DashboardResumen proyectos={proyectos} onSelect={setProyectoEditando} />
+        ) : vista === "tareas" ? (
+          <TareasGlobal onAbrirProyecto={abrirProyectoPorId} />
         ) : (
           <ProjectTable
             proyectos={proyectosFiltrados}
