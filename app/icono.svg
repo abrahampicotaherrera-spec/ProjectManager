@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="alphGradiente" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2C82C9" />
+      <stop offset="1" stop-color="#18538A" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#alphGradiente)" />
+  <text
+    x="54"
+    y="90"
+    text-anchor="middle"
+    font-family="Calibri, Arial, sans-serif"
+    font-weight="700"
+    font-size="68"
+    fill="#FFFFFF"
+  >A</text>
+  <circle cx="99" cy="99" r="21" fill="#1E68AA" stroke="#FFFFFF" stroke-width="4" />
+  <path
+    d="M89 99 L96 106 L110 90"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
