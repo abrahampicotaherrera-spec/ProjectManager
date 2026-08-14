@@ -122,6 +122,8 @@ export default function ProjectForm({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rutaCopiada, setRutaCopiada] = useState(false);
+  const [abriendoCarpeta, setAbriendoCarpeta] = useState(false);
+  const [errorAbrirCarpeta, setErrorAbrirCarpeta] = useState<string | null>(null);
 
   async function copiarRuta() {
     try {
@@ -130,6 +132,30 @@ export default function ProjectForm({
       setTimeout(() => setRutaCopiada(false), 2000);
     } catch {
       // portapapeles no disponible en este navegador; no hacemos nada más
+    }
+  }
+
+  async function abrirCarpeta() {
+    setErrorAbrirCarpeta(null);
+    setAbriendoCarpeta(true);
+    try {
+      const controlador = new AbortController();
+      const limite = setTimeout(() => controlador.abort(), 3000);
+      const resp = await fetch(
+        `http://127.0.0.1:5321/abrir?ruta=${encodeURIComponent(ruta)}`,
+        { signal: controlador.signal }
+      );
+      clearTimeout(limite);
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        throw new Error(data.error || "No se pudo abrir la carpeta.");
+      }
+    } catch {
+      setErrorAbrirCarpeta(
+        "No se pudo conectar con el asistente local. Verifica que vigilar.bat esté corriendo, o usa \"Copiar ruta\"."
+      );
+    } finally {
+      setAbriendoCarpeta(false);
     }
   }
 
@@ -507,15 +533,25 @@ export default function ProjectForm({
               Rutas y Gantt
             </h3>
             <div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium text-slate-500">Ruta</p>
-                <button
-                  type="button"
-                  onClick={copiarRuta}
-                  className="text-[11px] font-medium text-brand-700 hover:underline"
-                >
-                  {rutaCopiada ? "¡Copiada!" : "Copiar ruta"}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={abrirCarpeta}
+                    disabled={abriendoCarpeta}
+                    className="text-[11px] font-medium text-brand-700 hover:underline disabled:opacity-50"
+                  >
+                    {abriendoCarpeta ? "Abriendo…" : "Abrir carpeta"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={copiarRuta}
+                    className="text-[11px] font-medium text-brand-700 hover:underline"
+                  >
+                    {rutaCopiada ? "¡Copiada!" : "Copiar ruta"}
+                  </button>
+                </div>
               </div>
               <button
                 type="button"
@@ -525,11 +561,12 @@ export default function ProjectForm({
               >
                 {ruta}
               </button>
+              {errorAbrirCarpeta && (
+                <p className="mt-1 text-[11px] text-rust-500">{errorAbrirCarpeta}</p>
+              )}
               <p className="mt-1 text-[11px] text-slate-400">
-                Calculada como carpeta base + N°-CLIENTE. Haz click para
-                copiarla y pegarla en el Explorador de Windows (Win+R, o en
-                la barra de direcciones de una ventana abierta). La carpeta
-                se crea sola cuando corres el sincronizador local — ver
+                Calculada como carpeta base + N°-CLIENTE. "Abrir carpeta"
+                necesita que tengas vigilar.bat corriendo en tu compu — ver
                 sync-gantt.
               </p>
             </div>
