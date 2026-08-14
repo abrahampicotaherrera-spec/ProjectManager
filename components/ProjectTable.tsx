@@ -1,6 +1,7 @@
 "use client";
 
 import { Proyecto } from "@/lib/types";
+import { COLUMNAS_PROYECTO } from "@/lib/columnas";
 import {
   calcularAvanceAutomatico,
   calcularDiasDisponibles,
@@ -17,7 +18,7 @@ const RESALTADO_FILA: Record<string, string> = {
   Suspendido: "#DDA6A6",
 };
 
-function celda(texto: string | number | null | undefined, mono = false) {
+function celdaSimple(texto: string | number | null | undefined, mono = false) {
   return (
     <td
       className={`whitespace-nowrap border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800 ${
@@ -33,44 +34,27 @@ function celda(texto: string | number | null | undefined, mono = false) {
   );
 }
 
-const COLUMNAS = [
-  "No.",
-  "Tipo de tarea",
-  "Cliente",
-  "Nombre HubSpot",
-  "NV",
-  "RUC",
-  "DV",
-  "Estado",
-  "Tarea",
-  "Observaciones",
-  "Asignado",
-  "Ejecutivo comercial",
-  "País",
-  "Prioridad",
-  "Semanas de proyecto",
-  "Fecha asignación",
-  "Fecha inicio",
-  "Fecha proyectada final",
-  "Cantidad de días disponibles",
-  "Fecha finalización",
-  "Ruta",
-  "% Avance",
-  "Proyecto con GANTT",
-  "Ruta GANTT",
-  "Ruta HubSpot",
-  "Código cliente XDOC",
-  "Conectividad",
-];
+function celdaTruncada(texto: string | null | undefined) {
+  return (
+    <td
+      className="max-w-[240px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800"
+      title={texto ?? ""}
+    >
+      {texto || <span className="text-slate-300">—</span>}
+    </td>
+  );
+}
 
 export default function ProjectTable({
   proyectos,
   onSelect,
   carpetaBase,
+  columnasVisibles,
 }: {
   proyectos: Proyecto[];
   onSelect: (p: Proyecto) => void;
   carpetaBase: string;
+  columnasVisibles: Record<string, boolean>;
 }) {
   if (proyectos.length === 0) {
     return (
@@ -85,17 +69,95 @@ export default function ProjectTable({
     );
   }
 
+  const columnas = COLUMNAS_PROYECTO.filter((c) => columnasVisibles[c.key] ?? true);
+
+  function celdaPorColumna(
+    p: Proyecto,
+    key: string,
+    extras: { fechaFinal: string | null; dias: number | null; ruta: string; avance: number | null }
+  ) {
+    switch (key) {
+      case "numero":
+        return celdaSimple(p.numero, true);
+      case "tipo_tarea":
+        return celdaSimple(p.tipo_tarea);
+      case "cliente":
+        return (
+          <td className="whitespace-nowrap border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] font-medium text-ink-900">
+            {p.cliente}
+          </td>
+        );
+      case "nombre_hubspot":
+        return celdaSimple(p.nombre_hubspot);
+      case "nv":
+        return celdaSimple(p.nv, true);
+      case "ruc":
+        return celdaSimple(p.ruc, true);
+      case "dv":
+        return celdaSimple(p.dv, true);
+      case "estado":
+        return celdaSimple(p.estado);
+      case "tarea":
+        return celdaTruncada(p.tarea);
+      case "observaciones":
+        return celdaTruncada(p.observaciones);
+      case "asignado":
+        return celdaSimple(p.asignado);
+      case "ejecutivo_comercial":
+        return celdaSimple(p.ejecutivo_comercial);
+      case "pais":
+        return celdaSimple(p.pais);
+      case "prioridad":
+        return celdaSimple(p.prioridad);
+      case "semanas_proyecto":
+        return celdaSimple(p.semanas_proyecto);
+      case "fecha_asignacion":
+        return celdaSimple(formatFecha(p.fecha_asignacion));
+      case "fecha_inicio":
+        return celdaSimple(formatFecha(p.fecha_inicio));
+      case "fecha_proyectada_final":
+        return celdaSimple(formatFecha(extras.fechaFinal));
+      case "dias_disponibles":
+        return celdaSimple(extras.dias === null ? null : `${extras.dias} d`);
+      case "fecha_finalizacion":
+        return celdaSimple(formatFecha(p.fecha_finalizacion));
+      case "ruta":
+        return (
+          <td
+            className="max-w-[220px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-xs text-slate-500"
+            title={extras.ruta}
+          >
+            {extras.ruta}
+          </td>
+        );
+      case "porcentaje_avance":
+        return celdaSimple(extras.avance === null ? null : `${extras.avance}%`);
+      case "proyecto_con_gantt":
+        return celdaSimple(p.proyecto_con_gantt ? "Sí" : "No");
+      case "ruta_gantt":
+        return celdaSimple(p.ruta_gantt);
+      case "ruta_hubspot":
+        return celdaSimple(p.ruta_hubspot);
+      case "codigo_cliente_xdoc":
+        return celdaSimple(p.codigo_cliente_xdoc, true);
+      case "conectividad":
+        return celdaSimple(p.conectividad);
+      default:
+        return <td className="border-b border-r border-slate-200 px-2.5 py-1.5" />;
+    }
+  }
+
   return (
     <div className="thin-scroll overflow-auto rounded-xl border border-slate-200 bg-white shadow-card">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
-            {COLUMNAS.map((c) => (
+            {columnas.map((c) => (
               <th
-                key={c}
+                key={c.key}
                 className="sticky top-0 z-10 whitespace-nowrap border-b border-r border-slate-300 bg-[#F9F9F9] px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-tight text-ink-900"
               >
-                {c}
+                {c.label}
               </th>
             ))}
           </tr>
@@ -107,14 +169,16 @@ export default function ProjectTable({
               p.semanas_proyecto
             );
             const dias = calcularDiasDisponibles(fechaFinal);
-            const avanceMostrado = p.proyecto_con_gantt
-              ? p.porcentaje_avance
-              : calcularAvanceAutomatico(p.fecha_inicio, fechaFinal, false) ??
-                p.porcentaje_avance;
             const ruta = `${carpetaBase.replace(/[\\/]+$/, "")}\\${p.numero}-${
               p.cliente || "SIN-CLIENTE"
             }`;
+            const avance = p.proyecto_con_gantt
+              ? p.porcentaje_avance
+              : calcularAvanceAutomatico(p.fecha_inicio, fechaFinal, false) ??
+                p.porcentaje_avance;
             const fondo = RESALTADO_FILA[p.estado];
+            const extras = { fechaFinal, dias, ruta, avance };
+
             return (
               <tr
                 key={p.id}
@@ -122,52 +186,11 @@ export default function ProjectTable({
                 className="cursor-pointer hover:brightness-95"
                 style={fondo ? { backgroundColor: fondo } : undefined}
               >
-                {celda(p.numero, true)}
-                {celda(p.tipo_tarea)}
-                <td className="whitespace-nowrap border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] font-medium text-ink-900">
-                  {p.cliente}
-                </td>
-                {celda(p.nombre_hubspot)}
-                {celda(p.nv, true)}
-                {celda(p.ruc, true)}
-                {celda(p.dv, true)}
-                {celda(p.estado)}
-                <td
-                  className="max-w-[240px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800"
-                  title={p.tarea ?? ""}
-                >
-                  {p.tarea || <span className="text-slate-300">—</span>}
-                </td>
-                <td
-                  className="max-w-[240px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 text-[13px] text-ink-800"
-                  title={p.observaciones ?? ""}
-                >
-                  {p.observaciones || <span className="text-slate-300">—</span>}
-                </td>
-                {celda(p.asignado)}
-                {celda(p.ejecutivo_comercial)}
-                {celda(p.pais)}
-                {celda(p.prioridad)}
-                {celda(p.semanas_proyecto)}
-                {celda(formatFecha(p.fecha_asignacion))}
-                {celda(formatFecha(p.fecha_inicio))}
-                {celda(formatFecha(fechaFinal))}
-                {celda(dias === null ? null : `${dias} d`)}
-                {celda(formatFecha(p.fecha_finalizacion))}
-                <td
-                  className="max-w-[220px] truncate border-b border-r border-slate-200 px-2.5 py-1.5 font-mono text-xs text-slate-500"
-                  title={ruta}
-                >
-                  {ruta}
-                </td>
-                {celda(
-                  avanceMostrado === null ? null : `${avanceMostrado}%`
-                )}
-                {celda(p.proyecto_con_gantt ? "Sí" : "No")}
-                {celda(p.ruta_gantt)}
-                {celda(p.ruta_hubspot)}
-                {celda(p.codigo_cliente_xdoc, true)}
-                {celda(p.conectividad)}
+                {columnas.map((c) => (
+                  <ContentPasar key={c.key}>
+                    {celdaPorColumna(p, c.key, extras)}
+                  </ContentPasar>
+                ))}
               </tr>
             );
           })}
@@ -175,4 +198,10 @@ export default function ProjectTable({
       </table>
     </div>
   );
+}
+
+// Pequeño wrapper para poder usar key en la iteración sin envolver en un
+// elemento extra que rompa la tabla (React exige key en el nodo raíz del map).
+function ContentPasar({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
