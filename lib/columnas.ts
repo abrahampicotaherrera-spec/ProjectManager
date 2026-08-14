@@ -62,3 +62,30 @@ export function guardarColumnasVisibles(v: Record<string, boolean>): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(v));
 }
+
+const STORAGE_KEY_ORDEN = "gestor-proyectos:orden-columnas";
+
+export function ordenDefault(): string[] {
+  return COLUMNAS_PROYECTO.map((c) => c.key);
+}
+
+export function cargarOrdenColumnas(): string[] {
+  if (typeof window === "undefined") return ordenDefault();
+  try {
+    const guardado = window.localStorage.getItem(STORAGE_KEY_ORDEN);
+    if (!guardado) return ordenDefault();
+    const parsed = JSON.parse(guardado) as string[];
+    const clavesValidas = COLUMNAS_PROYECTO.map((c) => c.key);
+    const validos = parsed.filter((k) => clavesValidas.includes(k));
+    // columnas nuevas que no existían cuando se guardó el orden, al final
+    const faltantes = clavesValidas.filter((k) => !validos.includes(k));
+    return [...validos, ...faltantes];
+  } catch {
+    return ordenDefault();
+  }
+}
+
+export function guardarOrdenColumnas(orden: string[]): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_KEY_ORDEN, JSON.stringify(orden));
+}
