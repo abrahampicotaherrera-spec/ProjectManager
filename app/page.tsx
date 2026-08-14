@@ -177,7 +177,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-4 py-5">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-brand-600">
               Implementación de clientes
@@ -209,7 +209,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-6 py-6">
+      <div className="mx-auto max-w-[1800px] px-4 py-6">
         {errorCarga && (
           <div className="mb-4 rounded-lg border border-rust-500/30 bg-rust-500/10 px-4 py-3 text-sm text-rust-500">
             {errorCarga}
