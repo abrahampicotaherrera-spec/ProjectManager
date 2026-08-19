@@ -211,10 +211,10 @@ export default function ProjectForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-ink-950/40 backdrop-blur-[2px]">
-      <div className="flex h-full w-full max-w-2xl flex-col bg-slate-50 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/40 p-4 backdrop-blur-[2px]">
+      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col rounded-2xl bg-slate-50 shadow-2xl">
         {/* Encabezado */}
-        <div className="border-b border-slate-200 bg-white px-6 py-4">
+        <div className="rounded-t-2xl border-b border-slate-200 bg-white px-6 py-4">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
               <label className="block">
@@ -257,7 +257,7 @@ export default function ProjectForm({
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Identificación
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Campo label="Tipo de tarea">
                 <select
                   className={inputCls}
@@ -328,7 +328,7 @@ export default function ProjectForm({
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Estado y asignación
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Campo label="Estado">
                 <select
                   className={inputCls}
@@ -406,7 +406,7 @@ export default function ProjectForm({
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Fechas y avance
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Campo label="Fecha asignación">
                 <input
                   type="date"
@@ -618,7 +618,7 @@ export default function ProjectForm({
         </div>
 
         {/* Pie con acciones */}
-        <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4">
+        <div className="flex items-center justify-between rounded-b-2xl border-t border-slate-200 bg-white px-6 py-4">
           {proyecto && onDelete ? (
             <button
               onClick={() => onDelete(proyecto.id)}
