@@ -211,10 +211,10 @@ export default function ProjectForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/40 p-4 backdrop-blur-[2px]">
-      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col rounded-2xl bg-slate-50 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/40 p-3 backdrop-blur-[2px]">
+      <div className="flex max-h-[94vh] w-full max-w-6xl flex-col rounded-2xl bg-slate-50 shadow-2xl">
         {/* Encabezado */}
-        <div className="rounded-t-2xl border-b border-slate-200 bg-white px-6 py-4">
+        <div className="rounded-t-2xl border-b border-slate-200 bg-white px-5 py-3.5">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
               <label className="block">
@@ -252,12 +252,12 @@ export default function ProjectForm({
         </div>
 
         {/* Cuerpo con scroll */}
-        <div className="thin-scroll flex-1 space-y-8 overflow-y-auto px-6 py-6">
-          <section className="space-y-4">
+        <div className="thin-scroll flex-1 space-y-6 overflow-y-auto px-5 py-5">
+          <section className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Identificación
             </h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Campo label="Tipo de tarea">
                 <select
                   className={inputCls}
@@ -324,11 +324,11 @@ export default function ProjectForm({
             </div>
           </section>
 
-          <section className="space-y-4">
+          <section className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Estado y asignación
             </h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Campo label="Estado">
                 <select
                   className={inputCls}
@@ -402,11 +402,11 @@ export default function ProjectForm({
             </p>
           )}
 
-          <section className="space-y-4">
+          <section className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Fechas y avance
             </h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Campo label="Fecha asignación">
                 <input
                   type="date"
@@ -528,7 +528,7 @@ export default function ProjectForm({
             </div>
           </section>
 
-          <section className="space-y-4">
+          <section className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-700">
               Rutas y Gantt
             </h3>
@@ -618,7 +618,7 @@ export default function ProjectForm({
         </div>
 
         {/* Pie con acciones */}
-        <div className="flex items-center justify-between rounded-b-2xl border-t border-slate-200 bg-white px-6 py-4">
+        <div className="flex items-center justify-between rounded-b-2xl border-t border-slate-200 bg-white px-5 py-3.5">
           {proyecto && onDelete ? (
             <button
               onClick={() => onDelete(proyecto.id)}
